@@ -6,6 +6,7 @@ use protocol::{HTTPRequest, Location, HTTPResponse};
 use std::fs::File;
 use std::path::Path;
 use std::ffi::OsStr;
+use std::net::TcpStream;
 
 pub struct Server {
     // pub name: String,
@@ -50,7 +51,7 @@ impl Server {
         let request = HTTPRequest::parse(&read);
         if let Location::Document(ref root) = self.location {
             let mut extra = "";
-            if request.path.ends_with("/"){
+            if request.path.ends_with("/") {
                 extra = "index.html";
             }
             let location = format!("{}{}{}", root, request.path, extra); //TODO possible directory traversal
@@ -71,6 +72,20 @@ impl Server {
             let _ = BufWriter::new(stream).write(
                 HTTPResponse::new().content(content).version("1.1".to_string()).build().as_bytes() // status already set (default 200)
             );
+        } else if let Location::RProxy(ref address) = self.location {
+            let to_send = match TcpStream::connect(address) {
+                Ok(ref receiver) => {
+                    let _  = BufWriter::new(receiver).write(&buff); // write what was read
+                    let mut read_buff = [0;10240]; // max 10 megabytes
+                    let _ = BufReader::new(receiver).read(&mut read_buff); // read what was returned
+                    String::from_utf8_lossy(&read_buff).to_string() // send to client what was returned
+                }
+                Err(error) => {
+                    println!("Error: {}", error);
+                    "Experienced an error while connecting to the end server".to_string()
+                }
+            };
+            let _ = BufWriter::new(stream).write(&to_send.as_bytes());
         }
     }
     fn get_extension(file_name: &str) -> String {
