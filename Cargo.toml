@@ -1,0 +1,8 @@
+[package]
+name = "nserv"
+version = "0.1.0"
+authors = ["Sam Ezeh <sam@ezeh.me>"]
+
+[dependencies]
+regex = "0.2"
+config = "~0.1.0"
