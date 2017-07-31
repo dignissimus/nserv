@@ -42,7 +42,7 @@ fn parse_settings(settings: &SettingsList) -> Server {
     let host = get_string(&settings.get("host").expect("Please add the `host` field").value);
     let location = if let Some(ref location_string) = settings.get("root") {
         Location::Document(get_string(&location_string.value))
-    } else if let Some(ref address) = (*settings).get("proxy_address") {
+    } else if let Some(ref address) = settings.get("proxy_address") {
         Location::RProxy(get_string(&address.value))
     } else {
         panic!("Please add a location")
