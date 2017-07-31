@@ -76,7 +76,7 @@ impl Server {
             let to_send = match TcpStream::connect(address) {
                 Ok(ref receiver) => {
                     let _  = BufWriter::new(receiver).write(&buff); // write what was read
-                    let mut read_buff = [0;(1024 as u32).pow(2)*10]; // max 10 megabytes
+                    let mut read_buff = [0;10485760; // max 10 megabytes
                     let _ = BufReader::new(receiver).read(&mut read_buff); // read what was returned
                     String::from_utf8_lossy(&read_buff).to_string() // send to client what was returned
                 }
